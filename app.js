@@ -5,10 +5,6 @@ export default (express, bodyParser, createReadStream, crypto, http, mongo, path
 
     const parseUrlEncodedBody = bodyParser.urlencoded({ extended: false })
 
-    app.set('view engine', 'pug');
-    app.set('views', path.join(__dirname, 'pug'));
-    app.use(express.static(path.join(__dirname, 'pug')));
-
     app.use(parseUrlEncodedBody)
 
     app.use((req, res, next) => {
