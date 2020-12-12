@@ -1,120 +1,38 @@
-export default (express, bodyParser, createReadStream, crypto, http, mongo, path) => {
-    
-    const app = express()
-    const author = 'itmo282167'
-    const __dirname = path.resolve()
-
-    const parseUrlEncodedBody = bodyParser.urlencoded({ extended: false })
-
+export default (express, bodyParser, fs, crypto, http, mongodb, path, cors) => {
+    const app = express();
+    const __dirname = path.resolve();
     app.set('view engine', 'pug');
-    app.set('views', path.join(__dirname, 'pug'))
-    app.use(express.static(path.join(__dirname, 'pug')))
+    app.set('views', path.join(__dirname, 'public'));
+    app.use(express.static(path.join(__dirname, 'public')));
 
-    app.use(parseUrlEncodedBody)
-
-    app.use((req, res, next) => {
-        res.setHeader('Access-Control-Allow-Origin', '*')
-        res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS')
-
+    app.use(bodyParser.json());
+    app.use(express.urlencoded());
+    app.use(function (req, res, next) {
+        res.header("Access-Control-Allow-Origin", "*");
+        res.header("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS");
         next()
-    })
+    });
 
-    app.get('/login/', (req, res) => {
-        res.send(author)
-    })
+    app.use(cors());
+    app.options('*', cors());
 
-    app.get('/wordpress/wp-json/wp/v2/posts/1', (req, res) => {
-        return res.status(200).json({ title: { id: 1, rendered: author } })
-    })
+    app 
+        .get('/wordpress/wp-json/wp/v2/posts/1', (req, res) => res.status(200).json({title: {id: 1, rendered: "itmo282167"}}))
+        .post('/render/', (req, res) => {
+            const {random2, random3} = req.body;
 
-    app.post('/render/', (req, res) => {
-        const { random2, random3 } = req.body;
+            let { addr } = req.query;
 
-        let { addr } = req.query;
-
-        return res.render('random', { random2, random3 });
-    })
-    
-    app.get('/wordpress/', (req, res) => res.status(200).render('wordpress'))
-
-    app.get('/code/', (req, res) => {
-        let filePath = import.meta.url.replace(/^file:\/+/, '')
-    
-        if (! filePath.includes(':')) {
-            filePath = `/${filePath}`
-        }
-
-        createReadStream(filePath).pipe(res)
-    })
-
-    app.get('/sha1/:input', ({ params }, res) => {
-        const { input } = params
-
-        const hash = crypto.createHash('sha1').update(input).digest('hex')
-
-        res.send(hash);
-    })
-
-    app.get('/req/', ({ query }, res) => {
-        const { addr } = query
-
-        http.get(addr, httpRes => {
-            httpRes.setEncoding('utf8')
-
-            let data = ''
-
-            httpRes.on('data', chunk => { data += chunk })
-
-            httpRes.on('end', () => {
-                res.send(data)
-            })
+            console.log(addr);
+            
+            res.render('random', {random2: random2, random3: random3,});
         })
-    })
-    
-    app.post('/req/', ({ body }, res) => {
-        const { addr } = body
+        .get('/wordpress/', (req, res) => res.status(200).render('wordpress'))
+        .get('/login/', (req, res) => res.send('itmo282167'))
+        .all('*', (req, res) => {
+            res.send('itmo282167');
+        });
 
-        http.get(addr, httpRes => {
-            httpRes.setEncoding('utf8')
 
-            let data = ''
-
-            httpRes.on('data', chunk => { data += chunk })
-
-            httpRes.on('end', () => {
-                res.send(data)
-            })
-        })
-    })
-    
-    app.post('/insert/', async ({ body }, res) => {
-        const { login, password, URL  } = body
-
-        const UserSchema = mongo.Schema({
-            login: String,
-            password: String,
-        })
-
-        const User = mongo.model('User', UserSchema)
-
-        const connection = await mongo.connect(URL, { useNewUrlParser: true, useUnifiedTopology: true })
-
-        const user = new User({ login, password })
-        
-        user.save((e) => {
-            connection.disconnect()
-
-            if (e) {
-                return res.send(e.message)
-            }
-
-            return res.send(user)
-        })
-    })
-    
-    app.all('*', (req, res) => {
-        res.send(author)
-    })
-
-    return app
+    return app;
 }
