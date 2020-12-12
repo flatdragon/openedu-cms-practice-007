@@ -13,7 +13,6 @@ export default (express, bodyParser, createReadStream, crypto, http, mongo, path
     app.use(parseUrlEncodedBody)
 
     app.use((req, res, next) => {
-        res.setHeader('Content-Type', 'text/plain')
         res.setHeader('Access-Control-Allow-Origin', '*')
         res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS')
 
