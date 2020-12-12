@@ -2,8 +2,13 @@ export default (express, bodyParser, createReadStream, crypto, http, mongo, path
     
     const app = express()
     const author = 'itmo282167'
+    const __dirname = path.resolve()
 
     const parseUrlEncodedBody = bodyParser.urlencoded({ extended: false })
+
+    app.set('view engine', 'pug');
+    app.set('views', path.join(__dirname, 'pug'))
+    app.use(express.static(path.join(__dirname, 'pug')))
 
     app.use(parseUrlEncodedBody)
 
