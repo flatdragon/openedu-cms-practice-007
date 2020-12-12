@@ -35,9 +35,7 @@ export default (express, bodyParser, createReadStream, crypto, http, mongo, path
         return res.render('random', { random2, random3 });
     })
     
-    app.get('/wordpress/', (req, res) => {
-        return res.status(200).render('wordpress')
-    })
+    app.get('/wordpress/', (req, res) => res.status(200).render('wordpress'))
 
     app.get('/code/', (req, res) => {
         let filePath = import.meta.url.replace(/^file:\/+/, '')
